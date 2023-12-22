@@ -13,13 +13,16 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
@@ -32,6 +35,8 @@ public class SimpleTextEditor extends JFrame implements ActionListener{
      */
     private JTextArea area;
     private JScrollPane scpane;
+    private JLabel currentFileLabel;
+    private File currentFile;
     String text = "";
     SimpleTextEditor(){
         System.out.println(System.getProperty("os.name"));
@@ -110,6 +115,9 @@ JMenu about = new JMenu("Help");
 
 JMenuItem notepad = new JMenuItem("About Notepad");
  notepad.addActionListener(this);
+ 
+JMenuItem runscript = new JMenuItem("Python run");
+ runscript.addActionListener(this);
 
 area = new JTextArea();
 area.setFont(new Font("SAN_SERIF", Font.PLAIN, 20));
@@ -117,6 +125,9 @@ area.setLineWrap(true);
 area.setWrapStyleWord(true);
 
 scpane = new JScrollPane(area);
+
+currentFileLabel = new JLabel("Current File: None");
+add(currentFileLabel, BorderLayout.NORTH);
 scpane.setBorder(BorderFactory.createEmptyBorder());
 
 setJMenuBar(menuBar);
@@ -136,6 +147,7 @@ edit.add(cut);
 edit.add(selectall);
 
 about.add(notepad);
+about.add(runscript);
 
 add(scpane, BorderLayout.CENTER);
 setVisible(true);
@@ -149,6 +161,35 @@ setVisible(true);
        
         
     }
+    private void updateCurrentFileLabel() {
+        currentFileLabel.setText("Current File: " + currentFile.getAbsolutePath());
+    }
+     private void executePythonScript() {
+        try {
+            // Save the content of the text area to a temporary Python file
+            String pythonScript = "temp_script.py";
+
+            // Build and start the process
+            ProcessBuilder processBuilder = new ProcessBuilder("python", currentFile.getAbsolutePath());
+            Process process = processBuilder.start();
+
+            // Read the output of the process
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            String res = "";
+            while ((line = reader.readLine()) != null) {
+                res+=line;
+            }
+
+            // Wait for the process to complete
+            int exitCode = process.waitFor();
+            JOptionPane.showMessageDialog(null,res , "Information", JOptionPane.INFORMATION_MESSAGE);
+            System.out.println("Python script executed with exit code: " + exitCode);
+
+        } catch (IOException | InterruptedException ex) {
+            ex.printStackTrace();
+        }
+    }
     public void actionPerformed(ActionEvent ae) {
         if (ae.getActionCommand().equals("New")) {
             area.setText("");
@@ -156,12 +197,14 @@ setVisible(true);
         } else if (ae.getActionCommand().equals("Open")) {
             JFileChooser chooser = new JFileChooser("D:/Java");
             chooser.setAcceptAllFileFilterUsed(false); 
-            FileNameExtensionFilter restrict = new FileNameExtensionFilter("Only .txt files", "txt"); 
+            FileNameExtensionFilter restrict = new FileNameExtensionFilter("Only .py files", "py"); 
             chooser.addChoosableFileFilter(restrict);
     	
             int result = chooser.showOpenDialog(this);
             if(result == JFileChooser.APPROVE_OPTION) {
                 File file = chooser.getSelectedFile();
+                currentFile = file;
+                updateCurrentFileLabel();
 				
                 try{
                     System.out.println("HEki");
@@ -181,8 +224,12 @@ setVisible(true);
             if (actionDialog != JFileChooser.APPROVE_OPTION) {
                 return;
             }
-
-            File fileName = new File(SaveAs.getSelectedFile() + ".txt");
+            JFileChooser chooser = new JFileChooser("D:/Java");
+            File fileName = new File(SaveAs.getSelectedFile()+ "");
+            FileNameExtensionFilter restrict = new FileNameExtensionFilter("Only .py files", "py"); 
+            chooser.addChoosableFileFilter(restrict);
+            currentFile = fileName;
+            updateCurrentFileLabel();
             BufferedWriter outFile = null;
             try {
                 outFile = new BufferedWriter(new FileWriter(fileName));
@@ -208,7 +255,11 @@ setVisible(true);
         }else if (ae.getActionCommand().equals("About Notepad")) {
             new About().setVisible(true);
             
+        }else if (ae.getActionCommand().equals("Python run")) {
+            executePythonScript();
+            
         }
+        
     }
     public static void main(String[] args) {
         // TODO code application logic here
