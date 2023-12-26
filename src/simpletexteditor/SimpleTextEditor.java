@@ -62,7 +62,7 @@ public class SimpleTextEditor extends JFrame implements ActionListener{
 
 
          // Set the frame title
-        setTitle("Simple Text Editor");
+        setTitle("SPy");
         // Set the frame size
         setSize(700, 500);
 //        setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -111,7 +111,7 @@ JMenuItem selectall = new JMenuItem("Select All");
 selectall.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, ActionEvent.CTRL_MASK));
  selectall.addActionListener(this);
 
-JMenu about = new JMenu("Help");
+JMenu about = new JMenu("tools");
 
 JMenuItem notepad = new JMenuItem("About Notepad");
  notepad.addActionListener(this);
@@ -167,7 +167,6 @@ setVisible(true);
      private void executePythonScript() {
         try {
             // Save the content of the text area to a temporary Python file
-            String pythonScript = "temp_script.py";
 
             // Build and start the process
             ProcessBuilder processBuilder = new ProcessBuilder("python", currentFile.getAbsolutePath());
